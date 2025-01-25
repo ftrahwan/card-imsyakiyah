@@ -1,336 +1,551 @@
 <!DOCTYPE html>
 <html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Imsakiyah</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f2f5;
-        margin: 0;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
 
-      .main-container {
-        width: 100%;
-        max-width: 400px;
-        margin: 0 12px;
-        gap: 16px;
-        position: relative;
-        overflow: hidden;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Imsakiyah</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
-      .header-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0px;
-      }
+    .main-container {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 12px;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
 
-      .card-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0px;
-      }
+    .header-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0px;
+    }
 
-      .next-prayer {
-        color: black;
-        text-align: right;
-        padding: 30px;
-        background-color: #fadbbc;
-        position: relative;
-        border-radius: 4px 4px 0 0;
-      }
+    .card-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0px;
+    }
 
-      .next-prayer h2 {
-        margin: 0;
-        font-size: 24px;
-      }
+    .next-prayer {
+      color: black;
+      text-align: right;
+      padding: 30px;
+      background-color: #fadbbc;
+      position: relative;
+      border-radius: 4px 4px 0 0;
+    }
 
-      .next-prayer p {
-        margin: 5px 0;
-        opacity: 0.8;
-      }
+    .next-prayer h2 {
+      margin: 0;
+      font-size: 24px;
+    }
 
-      .dropdown select {
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
+    .next-prayer p {
+      margin: 5px 0;
+      opacity: 0.8;
+    }
 
-        border: 2px solid #005670;
-        border-radius: 4px;
-        padding: 12px 16px;
-        font-size: 16px;
-        color: #c8c8c8;
-        width: 100%;
-        box-sizing: border-box;
-        cursor: pointer;
-      }
+    .dropdown select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
 
-      .dropdown {
-        position: relative;
-        width: 100%;
-        margin: 16px 0;
-      }
+      border: 2px solid #005670;
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-size: 16px;
+      color: #c8c8c8;
+      width: 100%;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
 
-      .dropdown::after {
-        content: "▼";
-        position: absolute;
-        top: 50%;
-        right: 15px;
-        transform: translateY(-50%);
-        font-size: 12px;
-        color: #005670;
-      }
+    .dropdown {
+      position: relative;
+      width: 100%;
+      margin: 16px 0;
+    }
 
-      .schedule-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 24px 24px;
-        background-color: #005670;
-        border-radius: 0 0 4px 4px;
-      }
+    .dropdown::after {
+      content: "▼";
+      position: absolute;
+      top: 50%;
+      right: 15px;
+      transform: translateY(-50%);
+      font-size: 12px;
+      color: #005670;
+    }
 
-      .schedule-item {
-        background-color: #e69849;
-        padding: 16px 16px;
-        border-radius: 2px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: white;
-        transition: all 0.3s ease;
-      }
+    .schedule-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 24px 24px;
+      background-color: #005670;
+      border-radius: 0 0 4px 4px;
+    }
 
-      .schedule-item h3 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 700;
-        text-transform: uppercase;
-      }
+    .schedule-item {
+      background-color: #e69849;
+      padding: 16px 16px;
+      border-radius: 2px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      transition: all 0.3s ease;
+    }
 
-      .schedule-item p {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 500;
-      }
+    .schedule-item h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
 
-      .date {
-        color: black;
-        text-align: center;
-      }
+    .schedule-item p {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+    }
 
-      .monthly-schedule table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-        margin: 16px 0;
-        border-radius: 2px;
-        overflow: hidden;
-      }
+    .date {
+      color: black;
+      text-align: center;
+    }
 
-      .monthly-schedule th {
-        background-color: #005670;
-        color: white;
-        padding: 8px;
-        text-align: center;
-      }
+    .monthly-schedule table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin: 16px 0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
 
-      .monthly-schedule td {
-        padding: 8px;
-        text-align: center;
-      }
+    .monthly-schedule th {
+      background-color: #005670;
+      color: white;
+      padding: 8px;
+      text-align: center;
+    }
 
-      .monthly-schedule tbody tr:nth-child(odd) {
-        background-color: #f0f2f5;
-      }
+    .monthly-schedule td {
+      padding: 8px;
+      text-align: center;
+    }
 
-      .monthly-schedule tbody tr:nth-child(even) {
-        background-color: #ffffff;
-      }
-    </style>
-  </head>
+    .monthly-schedule tbody tr:nth-child(odd) {
+      background-color: #f0f2f5;
+    }
 
-  <body>
-    <div class="main-container">
-      <div class="header-container">
-        <h1 style="text-align: center">Jadwal Imsakiyah</h1>
-        <div class="date" id="current-date"></div>
-        <div class="dropdown">
-          <select onchange="updateSchedule(this.value)" id="citySelect">
-            <option value="jakarta">Kota Jakarta</option>
-            <option value="surabaya">Kota Surabaya</option>
-            <option value="bandung">Kota Bandung</option>
-          </select>
-        </div>
-      </div>
-      <div class="card-container">
-        <div class="next-prayer">
-          <h2></h2>
-          <p></p>
-        </div>
-        <div class="schedule-grid">
-          <div class="schedule-item">
-            <h3>Imsak</h3>
-            <p id="imsak"></p>
-          </div>
-          <div class="schedule-item">
-            <h3>Shubuh</h3>
-            <p id="subuh"></p>
-          </div>
-          <div class="schedule-item">
-            <h3>Dhuhur</h3>
-            <p id="dzuhur"></p>
-          </div>
-          <div class="schedule-item">
-            <h3>Ashar</h3>
-            <p id="ashar"></p>
-          </div>
-          <div class="schedule-item">
-            <h3>Maghrib</h3>
-            <p id="maghrib"></p>
-          </div>
-          <div class="schedule-item">
-            <h3>Isya</h3>
-            <p id="isya"></p>
-          </div>
-        </div>
-      </div>
-      <div class="monthly-schedule">
-        <table>
-          <thead>
-            <tr>
-              <th>Tanggal</th>
-              <th>Imsak</th>
-              <th>Subuh</th>
-              <th>Dzuhur</th>
-              <th>Ashar</th>
-              <th>Maghrib</th>
-              <th>Isya</th>
-            </tr>
-          </thead>
-          <tbody id="monthly-schedule-body"></tbody>
-        </table>
+    .monthly-schedule tbody tr:nth-child(even) {
+      background-color: #ffffff;
+    }
+
+    .social-share {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .share-button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .share-button:hover {
+      transform: scale(1.1);
+    }
+
+    .whatsapp {
+      background-color: #25d366;
+    }
+
+    .x-platform {
+      background-color: #000000;
+    }
+
+    .facebook {
+      background-color: #3b5998;
+    }
+
+    .share-button i {
+      color: white;
+      font-size: 24px;
+    }
+
+    .social-container {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .share-container {
+      display: flex;
+      gap: 8px;
+    }
+
+    .share-button,
+    .download-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .share-button {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+    }
+
+    .download-button {
+      background-color: #005670;
+      color: white;
+      padding: 8px 16px;
+      gap: 8px;
+      border-radius: 2px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .share-button:hover,
+    .download-button:hover {
+      transform: scale(1.1);
+    }
+
+    .whatsapp {
+      background-color: #25d366;
+    }
+
+    .x-platform {
+      background-color: #000000;
+    }
+
+    .facebook {
+      background-color: #3b5998;
+    }
+
+    .download {
+      background-color: #4caf50;
+    }
+
+    .share-button i,
+    .download-button i {
+      color: white;
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-container">
+    <div class="header-container">
+      <h1 style="text-align: center">Jadwal Imsakiyah</h1>
+      <div class="date" id="current-date"></div>
+      <div class="dropdown">
+        <select onchange="updateSchedule(this.value)" id="citySelect">
+          <option value="jakarta">Kota Jakarta</option>
+          <option value="surabaya">Kota Surabaya</option>
+          <option value="bandung">Kota Bandung</option>
+        </select>
       </div>
     </div>
-  </body>
-  <script>
-    const prayerSchedules = {
-      jakarta: {
-        imsak: "04:09",
-        subuh: "04:19",
-        dzuhur: "12:00",
-        ashar: "15:26",
-        maghrib: "18:14",
-        isya: "19:29",
-      },
-      surabaya: {
-        imsak: "03:43",
-        subuh: "03:53",
-        dzuhur: "11:36",
-        ashar: "15:02",
-        maghrib: "17:52",
-        isya: "19:08",
-      },
-      bandung: {
-        imsak: "04:05",
-        subuh: "04:15",
-        dzuhur: "11:57",
-        ashar: "15:23",
-        maghrib: "18:16",
-        isya: "19:15",
-      },
+    <div class="card-container">
+      <div class="next-prayer">
+        <h2 id="minutes-counts"></h2>
+        <p id="closest-prayer"></p>
+      </div>
+      <div class="schedule-grid">
+        <div class="schedule-item">
+          <h3>Imsak</h3>
+          <p id="imsak-today"></p>
+        </div>
+        <div class="schedule-item">
+          <h3>Shubuh</h3>
+          <p id="subuh-today"></p>
+        </div>
+        <div class="schedule-item">
+          <h3>Dhuhur</h3>
+          <p id="dzuhur-today"></p>
+        </div>
+        <div class="schedule-item">
+          <h3>Ashar</h3>
+          <p id="ashar-today"></p>
+        </div>
+        <div class="schedule-item">
+          <h3>Maghrib</h3>
+          <p id="maghrib-today"></p>
+        </div>
+        <div class="schedule-item">
+          <h3>Isya</h3>
+          <p id="isya-today"></p>
+        </div>
+      </div>
+    </div>
+    <div class="monthly-schedule">
+      <table>
+        <thead>
+          <tr>
+            <th>Tanggal</th>
+            <th>Imsak</th>
+            <th>Subuh</th>
+            <th>Dzuhur</th>
+            <th>Ashar</th>
+            <th>Maghrib</th>
+            <th>Isya</th>
+          </tr>
+        </thead>
+        <tbody id="monthly-schedule-body"></tbody>
+      </table>
+    </div>
+    <div class="social-container">
+      <div class="share-container">
+        <div class="share-button whatsapp" onclick="shareWhatsApp()">
+          <i class="fab fa-whatsapp"></i>
+        </div>
+        <div class="share-button x-platform" onclick="shareX()">
+          <i class="fab fa-x-twitter"></i>
+        </div>
+        <div class="share-button facebook" onclick="shareFacebook()">
+          <i class="fab fa-facebook-f"></i>
+        </div>
+      </div>
+      <div class="download-button" onclick="download()">
+        <i class="fas fa-download"></i> Download
+      </div>
+    </div>
+</body>
+<script>
+  function displayCurrentDate() {
+    const currentDateElement = document.getElementById("current-date");
+    const now = new Date();
+    const options = {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     };
+    currentDateElement.textContent = now.toLocaleDateString("id-ID", options);
+  }
 
-    // Fungsi untuk menampilkan tanggal sekarang dan menetapkan kota default
-    function initializeSchedule() {
-      const defaultCity = "jakarta";
-      document.getElementById("citySelect").value = defaultCity;
+  document.addEventListener("DOMContentLoaded", displayCurrentDate);
 
-      // Tampilkan tanggal saat ini
-      const currentDateElement = document.getElementById("current-date");
-      const now = new Date();
-      const options = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      };
-      currentDateElement.textContent = now.toLocaleDateString("id-ID", options);
+  const defaultSchedule = {
+    jakarta: {
+      imsak: "04:09",
+      subuh: "04:19",
+      dzuhur: "12:00",
+      ashar: "15:26",
+      maghrib: "18:14",
+      isya: "19:29",
+    },
+    surabaya: {
+      imsak: "03:43",
+      subuh: "03:53",
+      dzuhur: "11:36",
+      ashar: "15:02",
+      maghrib: "17:52",
+      isya: "19:08",
+    },
+    bandung: {
+      imsak: "04:05",
+      subuh: "04:15",
+      dzuhur: "11:57",
+      ashar: "15:23",
+      maghrib: "18:16",
+      isya: "19:27",
+    },
+  };
 
-      // Generate tabel awal dengan data default
-      populateMonthlySchedule(defaultCity);
+  function addMinutesToTime(time, minutes) {
+    const [hours, mins] = time.split(":").map(Number);
+    const date = new Date();
+    date.setHours(hours, mins + minutes, 0, 0);
+    const newHours = date.getHours().toString().padStart(2, "0");
+    const newMinutes = date.getMinutes().toString().padStart(2, "0");
+    return `${newHours}:${newMinutes}`;
+  }
 
-      // Perbarui card berdasarkan tanggal sekarang
-      updateCardWithTodaySchedule();
+  function calculateDailySchedule(city) {
+    const today = new Date().getDate(); // Tanggal hari ini (1-31)
+    const schedule = { ...defaultSchedule[city] }; // Salin jadwal default
+    const adjustment = (today - 1) % 30; // Penyesuaian berdasarkan hari (0-29)
+
+    // Tambahkan penyesuaian waktu ke setiap jadwal sholat
+    for (let prayer in schedule) {
+      schedule[prayer] = addMinutesToTime(schedule[prayer], adjustment);
     }
+    return schedule;
+  }
 
-    function populateMonthlySchedule(city) {
-      const schedule = prayerSchedules[city];
-      const tbody = document.getElementById("monthly-schedule-body");
-      tbody.innerHTML = ""; // Kosongkan tabel sebelumnya
+  // Variabel untuk jadwal real-time hari ini
+  let todaySchedule = calculateDailySchedule("jakarta");
 
-      const daysInMonth = new Date(
-        new Date().getFullYear(),
-        new Date().getMonth() + 1,
-        0
-      ).getDate(); // Hari dalam bulan ini
+  // Fungsi untuk memperbarui elemen jadwal real-time di UI
+  function updateTodaySchedule(city) {
+    todaySchedule = calculateDailySchedule(city);
 
-      for (let day = 1; day <= daysInMonth; day++) {
-        const tr = document.createElement("tr");
-        const dateCell = document.createElement("td");
-        dateCell.textContent = `${day}`.padStart(2, "0");
-        tr.appendChild(dateCell);
+    // Perbarui elemen pada HTML
+    document.getElementById("imsak-today").textContent = todaySchedule.imsak;
+    document.getElementById("subuh-today").textContent = todaySchedule.subuh;
+    document.getElementById("dzuhur-today").textContent =
+      todaySchedule.dzuhur;
+    document.getElementById("ashar-today").textContent = todaySchedule.ashar;
+    document.getElementById("maghrib-today").textContent =
+      todaySchedule.maghrib;
+    document.getElementById("isya-today").textContent = todaySchedule.isya;
+  }
 
-        // Tambahkan waktu untuk setiap jadwal dengan pola penambahan menit
-        const updatedSchedule = Object.keys(schedule).reduce((acc, key) => {
-          const [hours, minutes] = schedule[key].split(":").map(Number);
-          const totalMinutes = hours * 60 + minutes + (day - 1); // Tambah menit berdasarkan hari
-          const newHours = Math.floor(totalMinutes / 60) % 24;
-          const newMinutes = totalMinutes % 60;
-          acc[key] = `${newHours.toString().padStart(2, "0")}:${newMinutes
-            .toString()
-            .padStart(2, "0")}`;
-          return acc;
-        }, {});
+  // Jalankan saat halaman dimuat
+  document.addEventListener("DOMContentLoaded", function () {
+    // Perbarui jadwal real-time hari ini
+    updateTodaySchedule("jakarta");
 
-        // Masukkan data ke dalam tabel
-        ["imsak", "subuh", "dzuhur", "ashar", "maghrib", "isya"].forEach(
-          (key) => {
-            const cell = document.createElement("td");
-            cell.textContent = updatedSchedule[key];
-            tr.appendChild(cell);
-          }
-        );
+    // Dropdown untuk mengubah kota
+    document
+      .getElementById("citySelect")
+      .addEventListener("change", function () {
+        const selectedCity = this.value;
+        updateTodaySchedule(selectedCity);
+      });
+  });
 
-        tbody.appendChild(tr);
-      }
+  // Fungsi untuk menampilkan jadwal sholat selama sebulan dalam tabel
+  function populateMonthlySchedule(city) {
+    const schedule = defaultSchedule[city];
+    const tbody = document.getElementById("monthly-schedule-body");
+    tbody.innerHTML = ""; // Kosongkan tabel sebelumnya
+
+    const daysInMonth = new Date(
+      new Date().getFullYear(),
+      new Date().getMonth() + 1,
+      0
+    ).getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const tr = document.createElement("tr");
+      const dateCell = document.createElement("td");
+      dateCell.textContent = `${day}`.padStart(2, "0");
+      tr.appendChild(dateCell);
+
+      // Perhitungan jadwal dinamis berdasarkan hari
+      const adjustment = (day - 1) % 30; // Penyesuaian waktu
+      const imsakTime = addMinutesToTime(schedule.imsak, adjustment);
+      const subuhTime = addMinutesToTime(schedule.subuh, adjustment);
+      const dzuhurTime = addMinutesToTime(schedule.dzuhur, adjustment);
+      const asharTime = addMinutesToTime(schedule.ashar, adjustment);
+      const maghribTime = addMinutesToTime(schedule.maghrib, adjustment);
+      const isyaTime = addMinutesToTime(schedule.isya, adjustment);
+
+      // Tambahkan data ke baris tabel
+      [
+        imsakTime,
+        subuhTime,
+        dzuhurTime,
+        asharTime,
+        maghribTime,
+        isyaTime,
+      ].forEach((time) => {
+        const cell = document.createElement("td");
+        cell.textContent = time;
+        tr.appendChild(cell);
+      });
+
+      tbody.appendChild(tr);
     }
+  }
 
-    // Event handler untuk dropdown
-    function updateSchedule(city) {
-      // Perbarui jadwal harian di card
-      const schedule = prayerSchedules[city];
-      document.getElementById("imsak").textContent = schedule.imsak;
-      document.getElementById("subuh").textContent = schedule.subuh;
-      document.getElementById("dzuhur").textContent = schedule.dzuhur;
-      document.getElementById("ashar").textContent = schedule.ashar;
-      document.getElementById("maghrib").textContent = schedule.maghrib;
-      document.getElementById("isya").textContent = schedule.isya;
+  // Jalankan fungsi ketika halaman selesai dimuat
+  document.addEventListener("DOMContentLoaded", function () {
+    populateMonthlySchedule("jakarta"); // Default ke Jakarta
 
-      // Perbarui tabel jadwal bulanan
-      populateMonthlySchedule(city);
-    }
+    // Perbarui jadwal bulanan saat kota diubah
+    document
+      .getElementById("citySelect")
+      .addEventListener("change", function () {
+        const selectedCity = this.value;
+        populateMonthlySchedule(selectedCity);
+      });
+  });
 
-    // Set jadwal default untuk kota pertama (Jakarta)
-    document.addEventListener("DOMContentLoaded", () => {
-      const defaultCity = "jakarta";
-      document.getElementById("citySelect").value = defaultCity;
-      updateSchedule(defaultCity);
+  function shareWhatsApp() {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://api.whatsapp.com/send?text=${url}`, '_blank');
+  }
+
+  function shareX() {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://twitter.com/intent/tweet?url=${url}`, '_blank');
+  }
+
+  function shareFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+  }
+  function download() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const citySelect = document.getElementById('citySelect');
+    const selectedCity = citySelect.options[citySelect.selectedIndex].text;
+
+    const currentDate = new Date();
+    const month = currentDate.toLocaleString('id-ID', { month: 'long' });
+    const year = currentDate.getFullYear();
+
+    const tableBody = [];
+    const tableRows = document.querySelectorAll('#monthly-schedule-body tr');
+
+    tableRows.forEach(row => {
+      const rowData = [];
+      row.querySelectorAll('td').forEach(cell => {
+        rowData.push(cell.textContent);
+      });
+      tableBody.push(rowData);
     });
-  </script>
+
+    doc.setFontSize(16);
+    doc.text(`Jadwal Imsakiyah ${selectedCity} - ${month} ${year}`, 14, 20);
+
+    doc.autoTable({
+      startY: 30,
+      head: [['Tanggal', 'Imsak', 'Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya']],
+      body: tableBody,
+      theme: 'striped',
+      styles: {
+        fontSize: 8,
+        cellPadding: 3
+      },
+      headStyles: {
+        fillColor: [0, 86, 112],
+        textColor: 255
+      }
+    });
+
+    doc.save(`Jadwal_Sholat_${selectedCity}_${month}_${year}.pdf`);
+  }
+</script>
 </html>
