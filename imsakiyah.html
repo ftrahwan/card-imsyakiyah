@@ -265,6 +265,20 @@
     <div class="header-container">
       <h1 style="text-align: center">Jadwal Imsakiyah</h1>
       <div class="date" id="current-date"></div>
+      <script>
+        function displayCurrentDate() {
+          const currentDateElement = document.getElementById("current-date");
+          const now = new Date();
+          const options = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          };
+          currentDateElement.textContent = now.toLocaleDateString("id-ID", options);
+        }
+        document.addEventListener("DOMContentLoaded", displayCurrentDate);
+      </script>
       <div class="dropdown">
         <select onchange="updateSchedule(this.value)" id="citySelect">
           <option value="jakarta">Kota Jakarta</option>
@@ -277,6 +291,47 @@
       <div class="next-prayer">
         <h2 id="minutes-counts"></h2>
         <p id="closest-prayer"></p>
+        <script>
+          function calculateTimeToNextPrayer(city) {
+            const now = new Date();
+            const schedule = calculateDailySchedule(city);
+            const prayers = Object.entries(schedule);
+            const prayerTimes = prayers.map(([prayer, time]) => {
+              const [hours, minutes] = time.split(":").map(Number);
+              const prayerDate = new Date();
+              prayerDate.setHours(hours, minutes, 0, 0);
+              return { prayer, timeInMs: prayerDate.getTime() };
+            });
+            const nowInMs = now.getTime();
+            let nextPrayer = null;
+            for (const { prayer, timeInMs } of prayerTimes) {
+              if (timeInMs > nowInMs) {
+                nextPrayer = { prayer, minutesTo: Math.ceil((timeInMs - nowInMs) / 60000) };
+                break;
+              }
+            }
+            if (!nextPrayer) {
+              const [firstPrayer] = prayerTimes;
+              const tomorrow = new Date(now);
+              tomorrow.setDate(tomorrow.getDate() + 1);
+              const [hours, minutes] = firstPrayer.time.split(":").map(Number);
+              tomorrow.setHours(hours, minutes, 0, 0);
+              const timeInMs = tomorrow.getTime();
+              nextPrayer = { prayer: firstPrayer.prayer, minutesTo: Math.ceil((timeInMs - nowInMs) / 60000) };
+            }
+            document.getElementById("minutes-counts").textContent = `${nextPrayer.minutesTo} menit`;
+            document.getElementById("closest-prayer").textContent = `menuju sholat ${nextPrayer.prayer}`;
+          }
+          document.addEventListener("DOMContentLoaded", function () {
+            const city = "jakarta";
+            calculateTimeToNextPrayer(city);
+            document.getElementById("citySelect").addEventListener("change", function () {
+              const selectedCity = this.value;
+              calculateTimeToNextPrayer(selectedCity);
+            });
+            setInterval(() => calculateTimeToNextPrayer(city), 60000);
+          });
+        </script>
       </div>
       <div class="schedule-grid">
         <div class="schedule-item">
@@ -325,34 +380,82 @@
       <div class="share-container">
         <div class="share-button whatsapp" onclick="shareWhatsApp()">
           <i class="fab fa-whatsapp"></i>
+          <script>
+            function shareWhatsApp() {
+              const url = encodeURIComponent(window.location.href);
+              window.open(`https://api.whatsapp.com/send?text=${url}`, '_blank');
+            }
+          </script>
         </div>
         <div class="share-button x-platform" onclick="shareX()">
           <i class="fab fa-x-twitter"></i>
+          <script>
+            function shareX() {
+              const url = encodeURIComponent(window.location.href);
+              window.open(`https://twitter.com/intent/tweet?url=${url}`, '_blank');
+            }
+          </script>
         </div>
         <div class="share-button facebook" onclick="shareFacebook()">
           <i class="fab fa-facebook-f"></i>
+          <script>
+            function shareFacebook() {
+              const url = encodeURIComponent(window.location.href);
+              window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+            }
+          </script>
         </div>
       </div>
       <div class="download-button" onclick="download()">
         <i class="fas fa-download"></i> Download
+        <script>
+          function download() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const citySelect = document.getElementById('citySelect');
+            const selectedCity = citySelect.options[citySelect.selectedIndex].text;
+
+            const currentDate = new Date();
+            const month = currentDate.toLocaleString('id-ID', { month: 'long' });
+            const year = currentDate.getFullYear();
+
+            const tableBody = [];
+            const tableRows = document.querySelectorAll('#monthly-schedule-body tr');
+
+            tableRows.forEach(row => {
+              const rowData = [];
+              row.querySelectorAll('td').forEach(cell => {
+                rowData.push(cell.textContent);
+              });
+              tableBody.push(rowData);
+            });
+
+            doc.setFontSize(16);
+            doc.text(`Jadwal Imsakiyah ${selectedCity} - ${month} ${year}`, 14, 20);
+
+            doc.autoTable({
+              startY: 30,
+              head: [['Tanggal', 'Imsak', 'Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya']],
+              body: tableBody,
+              theme: 'striped',
+              styles: {
+                fontSize: 8,
+                cellPadding: 3
+              },
+              headStyles: {
+                fillColor: [0, 86, 112],
+                textColor: 255
+              }
+            });
+
+            doc.save(`Jadwal_Sholat_${selectedCity}_${month}_${year}.pdf`);
+          }
+        </script>
       </div>
     </div>
 </body>
 <script>
-  function displayCurrentDate() {
-    const currentDateElement = document.getElementById("current-date");
-    const now = new Date();
-    const options = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    };
-    currentDateElement.textContent = now.toLocaleDateString("id-ID", options);
-  }
-
-  document.addEventListener("DOMContentLoaded", displayCurrentDate);
-
   const defaultSchedule = {
     jakarta: {
       imsak: "04:09",
@@ -380,6 +483,15 @@
     },
   };
 
+  const adjustmentPattern = {
+    imsak: [0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17],
+    subuh: [0, 1, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 7, 8, 8, 9, 10, 10, 11, 11, 12, 12, 13, 13, 14, 14, 15, 15, 16, 16, 17],
+    dzuhur: [0, 0, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 9, 10],
+    ashar: [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5],
+    maghrib: [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 7, 7],
+    isya: [0, 0, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+  };
+
   function addMinutesToTime(time, minutes) {
     const [hours, mins] = time.split(":").map(Number);
     const date = new Date();
@@ -390,55 +502,34 @@
   }
 
   function calculateDailySchedule(city) {
-    const today = new Date().getDate(); // Tanggal hari ini (1-31)
-    const schedule = { ...defaultSchedule[city] }; // Salin jadwal default
-    const adjustment = (today - 1) % 30; // Penyesuaian berdasarkan hari (0-29)
+    const today = new Date().getDate();
+    const schedule = { ...defaultSchedule[city] };
 
-    // Tambahkan penyesuaian waktu ke setiap jadwal sholat
     for (let prayer in schedule) {
+      const pattern = adjustmentPattern[prayer];
+      const adjustment = pattern[(today - 1) % pattern.length];
       schedule[prayer] = addMinutesToTime(schedule[prayer], adjustment);
     }
+
     return schedule;
   }
 
-  // Variabel untuk jadwal real-time hari ini
   let todaySchedule = calculateDailySchedule("jakarta");
 
-  // Fungsi untuk memperbarui elemen jadwal real-time di UI
   function updateTodaySchedule(city) {
     todaySchedule = calculateDailySchedule(city);
-
-    // Perbarui elemen pada HTML
     document.getElementById("imsak-today").textContent = todaySchedule.imsak;
     document.getElementById("subuh-today").textContent = todaySchedule.subuh;
-    document.getElementById("dzuhur-today").textContent =
-      todaySchedule.dzuhur;
+    document.getElementById("dzuhur-today").textContent = todaySchedule.dzuhur;
     document.getElementById("ashar-today").textContent = todaySchedule.ashar;
-    document.getElementById("maghrib-today").textContent =
-      todaySchedule.maghrib;
+    document.getElementById("maghrib-today").textContent = todaySchedule.maghrib;
     document.getElementById("isya-today").textContent = todaySchedule.isya;
   }
 
-  // Jalankan saat halaman dimuat
-  document.addEventListener("DOMContentLoaded", function () {
-    // Perbarui jadwal real-time hari ini
-    updateTodaySchedule("jakarta");
-
-    // Dropdown untuk mengubah kota
-    document
-      .getElementById("citySelect")
-      .addEventListener("change", function () {
-        const selectedCity = this.value;
-        updateTodaySchedule(selectedCity);
-      });
-  });
-
-  // Fungsi untuk menampilkan jadwal sholat selama sebulan dalam tabel
   function populateMonthlySchedule(city) {
-    const schedule = defaultSchedule[city];
+    const baseSchedule = defaultSchedule[city];
     const tbody = document.getElementById("monthly-schedule-body");
-    tbody.innerHTML = ""; // Kosongkan tabel sebelumnya
-
+    tbody.innerHTML = "";
     const daysInMonth = new Date(
       new Date().getFullYear(),
       new Date().getMonth() + 1,
@@ -451,24 +542,15 @@
       dateCell.textContent = `${day}`.padStart(2, "0");
       tr.appendChild(dateCell);
 
-      // Perhitungan jadwal dinamis berdasarkan hari
-      const adjustment = (day - 1) % 30; // Penyesuaian waktu
-      const imsakTime = addMinutesToTime(schedule.imsak, adjustment);
-      const subuhTime = addMinutesToTime(schedule.subuh, adjustment);
-      const dzuhurTime = addMinutesToTime(schedule.dzuhur, adjustment);
-      const asharTime = addMinutesToTime(schedule.ashar, adjustment);
-      const maghribTime = addMinutesToTime(schedule.maghrib, adjustment);
-      const isyaTime = addMinutesToTime(schedule.isya, adjustment);
+      const dailySchedule = { ...baseSchedule };
 
-      // Tambahkan data ke baris tabel
-      [
-        imsakTime,
-        subuhTime,
-        dzuhurTime,
-        asharTime,
-        maghribTime,
-        isyaTime,
-      ].forEach((time) => {
+      for (let prayer in dailySchedule) {
+        const pattern = adjustmentPattern[prayer];
+        const adjustment = pattern[(day - 1) % pattern.length];
+        dailySchedule[prayer] = addMinutesToTime(dailySchedule[prayer], adjustment);
+      }
+
+      Object.values(dailySchedule).forEach((time) => {
         const cell = document.createElement("td");
         cell.textContent = time;
         tr.appendChild(cell);
@@ -478,74 +560,18 @@
     }
   }
 
-  // Jalankan fungsi ketika halaman selesai dimuat
   document.addEventListener("DOMContentLoaded", function () {
-    populateMonthlySchedule("jakarta"); // Default ke Jakarta
-
-    // Perbarui jadwal bulanan saat kota diubah
+    updateTodaySchedule("jakarta");
     document
       .getElementById("citySelect")
       .addEventListener("change", function () {
         const selectedCity = this.value;
+        updateTodaySchedule(selectedCity);
         populateMonthlySchedule(selectedCity);
       });
+
+    populateMonthlySchedule("jakarta");
   });
-
-  function shareWhatsApp() {
-    const url = encodeURIComponent(window.location.href);
-    window.open(`https://api.whatsapp.com/send?text=${url}`, '_blank');
-  }
-
-  function shareX() {
-    const url = encodeURIComponent(window.location.href);
-    window.open(`https://twitter.com/intent/tweet?url=${url}`, '_blank');
-  }
-
-  function shareFacebook() {
-    const url = encodeURIComponent(window.location.href);
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
-  }
-  function download() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const citySelect = document.getElementById('citySelect');
-    const selectedCity = citySelect.options[citySelect.selectedIndex].text;
-
-    const currentDate = new Date();
-    const month = currentDate.toLocaleString('id-ID', { month: 'long' });
-    const year = currentDate.getFullYear();
-
-    const tableBody = [];
-    const tableRows = document.querySelectorAll('#monthly-schedule-body tr');
-
-    tableRows.forEach(row => {
-      const rowData = [];
-      row.querySelectorAll('td').forEach(cell => {
-        rowData.push(cell.textContent);
-      });
-      tableBody.push(rowData);
-    });
-
-    doc.setFontSize(16);
-    doc.text(`Jadwal Imsakiyah ${selectedCity} - ${month} ${year}`, 14, 20);
-
-    doc.autoTable({
-      startY: 30,
-      head: [['Tanggal', 'Imsak', 'Subuh', 'Dzuhur', 'Ashar', 'Maghrib', 'Isya']],
-      body: tableBody,
-      theme: 'striped',
-      styles: {
-        fontSize: 8,
-        cellPadding: 3
-      },
-      headStyles: {
-        fillColor: [0, 86, 112],
-        textColor: 255
-      }
-    });
-
-    doc.save(`Jadwal_Sholat_${selectedCity}_${month}_${year}.pdf`);
-  }
 </script>
+
 </html>
