@@ -414,21 +414,18 @@
                 citySelect.value = "kota-jakarta";
               }
 
-              updateTodaySchedule(citySelect.value);
-              populateMonthlySchedule(citySelect.value);
-              calculateTimeToNextPrayer(citySelect.value);
+              Promise.all([
+                updateTodaySchedule(citySelect.value),
+                populateMonthlySchedule(citySelect.value),
+              ]);
 
               citySelect.addEventListener("change", function () {
                 const selectedCity = citySelect.value;
-                updateTodaySchedule(selectedCity);
-                populateMonthlySchedule(selectedCity);
-                calculateTimeToNextPrayer(selectedCity);
+                Promise.all([
+                  updateTodaySchedule(selectedCity),
+                  populateMonthlySchedule(selectedCity),
+                ]);
               });
-
-              setInterval(
-                () => calculateTimeToNextPrayer(citySelect.value),
-                60000
-              );
             });
           </script>
         </div>
@@ -690,28 +687,36 @@
     }
 
     async function updateTodaySchedule(filename) {
-      const todaySchedule = await loadPrayerTimes(filename);
-      if (!todaySchedule) return;
+      try {
+        const todaySchedule = await loadPrayerTimes(filename);
+        if (!todaySchedule) return;
 
-      const today = new Date().getDate().toString();
-      const schedule = todaySchedule.data[today];
+        const today = new Date().getDate().toString();
+        const schedule = todaySchedule.data[today];
 
-      if (!schedule) {
-        console.error("Jadwal untuk hari ini tidak ditemukan dalam JSON.");
-        return;
+        if (!schedule) {
+          console.error("Jadwal untuk hari ini tidak ditemukan dalam JSON.");
+          return;
+        }
+
+        document.getElementById("imsak-today").textContent = schedule.imsak;
+        document.getElementById("subuh-today").textContent = schedule.subuh;
+        document.getElementById("dzuhur-today").textContent = schedule.dzuhur;
+        document.getElementById("ashar-today").textContent = schedule.ashar;
+        document.getElementById("maghrib-today").textContent = schedule.maghrib;
+        document.getElementById("isya-today").textContent = schedule.isya;
+
+        startCountdown(schedule);
+
+        return schedule; 
+      } catch (error) {
+        console.error("Error updating today's schedule:", error);
       }
-
-      document.getElementById("imsak-today").textContent = schedule.imsak;
-      document.getElementById("subuh-today").textContent = schedule.subuh;
-      document.getElementById("dzuhur-today").textContent = schedule.dzuhur;
-      document.getElementById("ashar-today").textContent = schedule.ashar;
-      document.getElementById("maghrib-today").textContent = schedule.maghrib;
-      document.getElementById("isya-today").textContent = schedule.isya;
-
-      startCountdown(schedule);
     }
 
     function startCountdown(schedule) {
+      if (!schedule) return;
+
       const now = new Date();
       const prayerTimes = {
         Imsak: schedule.imsak,
@@ -745,10 +750,10 @@
         return;
       }
 
-      updateCountdown(closestPrayer);
+      updateCountdown(closestPrayer, schedule);
     }
 
-    function updateCountdown(prayer) {
+    function updateCountdown(prayer, schedule) {
       function calculateTimeLeft() {
         const now = new Date();
         const timeDiff = prayer.time - now;
@@ -761,7 +766,7 @@
           showToast(prayer.name);
 
           setTimeout(() => {
-            startCountdown(nextPrayer(schedule, prayer.name));
+            startCountdown(schedule);
           }, 120000);
 
           return;
@@ -773,7 +778,7 @@
           "sub-header"
         ).textContent = `menuju sholat ${prayer.name}`;
 
-        setTimeout(calculateTimeLeft, 1000);
+        setTimeout(calculateTimeLeft, 60000);
       }
 
       calculateTimeLeft();
@@ -790,9 +795,9 @@
       toast.classList.add("show");
       adzanAudio.play();
 
-      setTimeout(() => {
-        closeToast();
-      }, 5000);
+      // setTimeout(() => {
+      //   closeToast();
+      // }, 5000);
     }
 
     function closeToast() {
